@@ -19,9 +19,7 @@ const app = express(rootConfig);
 const server = http.createServer(app);
 app.use(bodyParser.json());
 app.use(
-  cors({
-    credentials: auth_enabled,
-  })
+  cors()
 );
 
 const func = (req, res, next ) => {
