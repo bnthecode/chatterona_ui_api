@@ -21,7 +21,6 @@ app.use(bodyParser.json());
 app.use(
   cors({
     credentials: auth_enabled,
-    origin: allowedOrigins,
   })
 );
 app.use("/api", authMiddleware, router);
