@@ -23,6 +23,11 @@ app.use(
     credentials: auth_enabled,
   })
 );
+
+const func = (req, res, next ) => {
+  res.status(200).send('NICE')
+}
+app.get("/route", func);
 app.use("/api", authMiddleware, router);
 
 
