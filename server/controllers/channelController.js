@@ -14,10 +14,17 @@ export const createChannel = async (req, res, next) => {
 export const getChannelMessages = async (req, res, next) => {
   try {
     const { channelId } = req.params;
-
+    const { page, limit } = req.query;
+    const perPage = 2;
+    // 1 page is how many messages? 2?
+    // lets go with 2.
 
     const foundChannel = await Channel.findById({ _id: channelId }).populate({
       path: "messages",
+      options: {
+
+        sort: { timestamp: 'asc' },
+      }
     });
 
     res.status(201).send(foundChannel.messages);
@@ -32,7 +39,8 @@ export const createChannelMessage = async (req, res, next) => {
     const { channelId } = req.params;
     const { user } = req;
     // the ui already has populated info, no reason to try and figure out a ton of logic each time
-    const { message, updatingLast } = req.body;
+    // switch something.. idk yet
+    const { message } = req.body;
     let responseMessage = {};
 
     const newMessageContent = await structureNewMessage(message);
@@ -40,7 +48,7 @@ export const createChannelMessage = async (req, res, next) => {
       path: "messages",
     });
 // just do a quick check to see who the last author is-- TODO
-
+    // figure a way to not try and get all this info each time..
     const lastMessage = getLastMessage(foundChannel.messages);
     const previousTime = getPreviousTime(lastMessage);
     const minutesPassed = getMinutesPassed(previousTime);
@@ -49,8 +57,9 @@ export const createChannelMessage = async (req, res, next) => {
     if (updateLast) {
       const updatedMessage = addToPreviousMessage(foundChannel.messages, newMessageContent);
       // mongoose says this is deprecated.. need to fix
-      const messageGettingUpdated = await Message.findByIdAndUpdate(lastMessage._id, { ...updatedMessage });
-        foundChannel.messages.push(messageGettingUpdated._id);
+
+        await Message.findByIdAndUpdate(lastMessage._id, { ...updatedMessage });
+
         await foundChannel.save();
         responseMessage = updatedMessage;
 

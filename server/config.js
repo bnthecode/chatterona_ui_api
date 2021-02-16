@@ -23,7 +23,6 @@ const config = {
     cookie: {
       cookie_name: "chatterona-session",
       cookie_config: {
-        maxAge: 24 * 60 * 60,
         httpOnly: true,
         secure: false,
       },

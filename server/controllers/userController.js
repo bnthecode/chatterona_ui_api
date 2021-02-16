@@ -1,4 +1,4 @@
-import { getUserCredentials } from "../middlewares/authMiddleware.js";
+import { createToken } from "../middlewares/authMiddleware.js";
 import User from "../models/userModel.js";
 import { mongoUserToUiUser } from "../parsers/userParser.js";
 import logger from "../utilities/logger.js";
@@ -15,8 +15,14 @@ export const createUser = async (req, res) => {
     const savedUser = await createdUser.save();
     
     const uiUser = mongoUserToUiUser(savedUser)
-    const { cookie, token } = getUserCredentials(savedUser);
-    res.cookie(cookie.cookie_name, token, { ...cookie.cookie_config });
+    const { token } = createToken(savedUser);
+
+    res.cookie('chatterona-session', token, {
+      maxAge: 60 * 60 * 1000, // 1 hour
+      httpOnly: true,
+      secure: true,
+      sameSite: true,
+    })
     res.status(201).send({...uiUser, token});
   } catch (error) {
     logger.error(`creating user ${err.message}`);
@@ -35,11 +41,17 @@ export const loginUser = async (req, res) => {
     const foundUser = await User.findOne({
       username: user.username,
     });
+    if(!foundUser) return createUser(req, res);
     foundUser.status = 'Online';
     await foundUser.save();
     const uiUser = mongoUserToUiUser(foundUser);
-    const { cookie, token } = getUserCredentials(foundUser);
-    res.cookie(cookie.cookie_name, token, { ...cookie.cookie_config });
+    const { token } = createToken(foundUser);
+    res.cookie("ct_session", token, {
+      maxAge: 60 * 60 * 1000, // 1 hour
+      httpOnly: true,
+      secure: false,
+      sameSite: true,
+    })
     res.status(201).send({ ...uiUser, token});
   } catch (error) {
     logger.error(`logging in ${error.message}`);
@@ -60,8 +72,7 @@ export const logoutUser = async (req, res) => {
     });
     foundUser.status = 'Offline';
     await foundUser.save();
-    const { cookie } = getUserCredentials(user);
-    res.clearCookie(cookie.cookie_name)
+    res.clearCookie("ct_session")
     res.status(201).send('Successfully logged out');
   } catch (error) {
     logger.error(`logging out ${error.message}`);

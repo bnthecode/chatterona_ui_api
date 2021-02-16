@@ -55,7 +55,7 @@ export const decideOnUpdate = (minutesPassed, lastMessage, username) => {
 };
 
 export const addToPreviousMessage = (messages, newMessage) => {  
-  const lastMessage = messages.pop();
+  const lastMessage = messages[messages.length - 1];
   const oldMessageObj = lastMessage.toObject();
   const newMessageToBeUpdated = {
     ...oldMessageObj,
