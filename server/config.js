@@ -14,19 +14,19 @@ const config = {
     auth_enabled: process.env.AUTH_ENABLED === "true",
     allowedOrigins: process.env.FRONT_END_URL,
     jwt: {
-      jwt_encryption_key: process.env.JWT_ENCRYPTION_KEY,
+      jwt_encryption_key: 'chatterona-secret',
       jwt_config: {
         algorithm: "HS256",
-        expiresIn: 20000,
+        expiresIn: '2d',
       },
     },
     cookie: {
-      cookie_name: "chatterona-session",
-      cookie_config: {
-        httpOnly: true,
-        secure: false,
-      },
+
     },
+  },
+  notifications: {
+    pub_key: process.env.NOTIFICATION_PUB_KEY || '',
+    priv_key: process.env.NOTIFICAITON_PRIV_KEY || ''
   },
  
   database: {

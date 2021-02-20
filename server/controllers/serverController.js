@@ -10,9 +10,8 @@ import logger from "../utilities/logger.js";
 export const getServers = async (req, res) => {
   try {
     const { user } = req;
-const foundServers = await Server.find({ users: user.id });
+    const foundServers = await Server.find({ users: user.id });
     const uiServers = foundServers.map((home) => mongoServersToUiServers(home));
-
     res.status(200).send(uiServers);
   } catch (err) {
     logger.error(`GET /servers ${err.message}`);
@@ -23,7 +22,7 @@ const foundServers = await Server.find({ users: user.id });
 export const getServer = async (req, res) => {
   try {
     const { serverId } = req.params;
-    const foundServer = await Server.findOne({ _id: serverId });
+    const foundServer = await Server.findById(serverId);
     const uiServer = mongoServerToUiServer(foundServer);
     res.status(200).send(uiServer);
   } catch (err) {
@@ -50,22 +49,24 @@ export const addUserToServer = async (req, res) => {
     const { serverId } = req.params;
     const { userId } = req.body;
 
-    const foundServer = await Server.findOne({ _id: serverId });
+    const foundServer = await Server.findById(serverId);
+    // instead just send a message, and when they accept you can then you add.. but for now this works fine
     foundServer.users.push(userId);
     await foundServer.save();
 
-    res.status(200).send('updated');
+    res.status(200).send("updated");
   } catch (err) {
     logger.error(`PUT /servers/id/users ${err.message}`);
-    res.status(500).send("error occured getting server");
+    res.status(500).send("error occured adding users to server");
   }
 };
 export const createServer = async (req, res) => {
   try {
     const { user } = req;
+    const { server } = req.body;
     const channels = [
-      { name: "general", type: "text", messages: [] },
-      { name: "general", type: "voice", messages: [] },
+      { name: "general-1", type: "text", messages: [] },
+      { name: "general-2", type: "voice", messages: [] },
     ];
     const savedChannels = Promise.all(
       channels.map(async (chnl) => {
@@ -82,17 +83,19 @@ export const createServer = async (req, res) => {
       })
     );
 
-
     const newServer = new Server({
-      name: `${user.username}'s server`,
-      photoURL: user.photoURL,
+      name: server.name || "Nothing",
+      photoURL:
+        user.photoURL ||
+        "https://images.unsplash.com/photo-1586182987320-4f376d39d787?ixid=MXwxMjA3fDB8MHxzZWFyY2h8N3x8Z2FtaW5nfGVufDB8fDB8&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
       timestamp: moment(),
       updates: [],
       channels: await savedChannels,
-      users: [req.user._id]
+      users: [req.user.id],
     });
 
     const createdServer = await newServer.save();
+    console.log(createdServer)
     const uiServer = mongoServerToUiServer(createdServer);
     res.status(201).send(uiServer);
   } catch (err) {

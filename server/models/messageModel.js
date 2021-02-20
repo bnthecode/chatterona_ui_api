@@ -57,6 +57,9 @@ const messageSchema = new Schema({
   date: {
     type: Date,
   },
+  idx: {
+    type: Number
+  }
 }, { timestamps: true });
 
 export default mongoose.model("Message", messageSchema);

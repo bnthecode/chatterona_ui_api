@@ -1,1 +1,0 @@
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Code\projects\chatterona_ui_api\firebase\admin.json"

@@ -1,42 +1,39 @@
 import config from "../config.js";
 import jsonwebtoken from "jsonwebtoken";
 import logger from "../utilities/logger.js";
+import userModel from "../models/userModel.js";
 
 const {
-  auth: {
-    jwt,
-  },
+  auth: { jwt },
 } = config;
 const { jwt_encryption_key } = jwt;
 
-export const buildReqUser = (token, req, next) => {
-  const { user } = token;
-  req.user = {
-    ...user,
-    id: user._id,
-  };
-  next();
-};
 export const createToken = (user) => {
   const token = jsonwebtoken.sign({ user }, jwt_encryption_key, jwt.jwt_config);
-  return { token };
+  return token;
 };
 
 export const httpAuthMiddleware = async (req, res, next) => {
   try {
+
+console.log('eee',req.originalUrl)
     const cookie = req.cookies.ct_session;
-    if (req.originalUrl !== "/api/users/login") {
-      const decodedToken = jsonwebtoken.verify(cookie, jwt_encryption_key);
-      logger.success("user set successfully");
-      return buildReqUser(decodedToken, req, next);
+    if (req.originalUrl !== "/api/users/login" && cookie) {
+
+      const foundUser = await userModel.findById(cookie);
+
+      
+      req.user = {
+        ...foundUser.toObject(),
+        id: foundUser._id,
+
+      }
     }
     next();
   } catch (error) {
-    logger.error(
-      `auth middleware ---> setting user to dev user ${error.message}`
-    );
-    res.status(401).send("You have been logged out");
+    res.status(401).send("you aint gotta cookie");
 
+    next();
     // normally send a 401
   }
 };

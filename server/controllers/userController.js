@@ -1,31 +1,45 @@
-import { createToken } from "../middlewares/authMiddleware.js";
 import User from "../models/userModel.js";
-import { mongoUserToUiUser } from "../parsers/userParser.js";
+import {
+  mongoUserFriendsoUiFriend,
+  mongoUserToUiUser,
+} from "../parsers/userParser.js";
 import logger from "../utilities/logger.js";
+import webpush from "web-push";
+import EventEmitter from "events";
+import config from "../config.js";
+
+
+const createMainUser = async () => {
+  const createdUser = new User({
+    username: "BRANDON_ADMIN",
+    photoURL:
+      "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MXx8ZG9nc3xlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+    status: "Online",
+  });
+  const savedMainUser = await createdUser.save();
+  return savedMainUser;
+};
 
 export const createUser = async (req, res) => {
   try {
     const { user } = req.body;
+    // all for development so i can clear the db whenever
+    let foundMainUser = await User.findOne({ username: "BRANDON_ADMIN" });
+    if (!foundMainUser) foundMainUser = await createMainUser();
+
     const createdUser = new User({
-     ...user,
+      ...user,
+      // give the poor guy some base friends
+      friends: [foundMainUser._id],
     });
-
-    
-    
     const savedUser = await createdUser.save();
-    
-    const uiUser = mongoUserToUiUser(savedUser)
-    const { token } = createToken(savedUser);
-
-    res.cookie('chatterona-session', token, {
-      maxAge: 60 * 60 * 1000, // 1 hour
-      httpOnly: true,
-      secure: true,
-      sameSite: true,
-    })
-    res.status(201).send({...uiUser, token});
+    foundMainUser.friends.push(savedUser._id);
+    await foundMainUser.save();
+    const uiUser = mongoUserToUiUser(savedUser);
+    res.cookie("ct_session", uiUser.id);
+    res.status(201).send({ ...uiUser });
   } catch (error) {
-    logger.error(`creating user ${err.message}`);
+    logger.error(`creating user ${error.message}`);
     res.status(500).send({
       message: {
         content: "An error occured creating user",
@@ -41,18 +55,16 @@ export const loginUser = async (req, res) => {
     const foundUser = await User.findOne({
       username: user.username,
     });
-    if(!foundUser) return createUser(req, res);
-    foundUser.status = 'Online';
+    if (!foundUser) return createUser(req, res);
+    const foundMainUser = await User.findOne({ username: "BRANDON_ADMIN" });
+    foundMainUser.friends.push(foundUser._id);
+    await foundMainUser.save();
+    foundUser.status = "Online";
     await foundUser.save();
     const uiUser = mongoUserToUiUser(foundUser);
-    const { token } = createToken(foundUser);
-    res.cookie("ct_session", token, {
-      maxAge: 60 * 60 * 1000, // 1 hour
-      httpOnly: true,
-      secure: false,
-      sameSite: true,
-    })
-    res.status(201).send({ ...uiUser, token});
+
+    res.cookie("ct_session", uiUser.id);
+    res.status(201).send(uiUser);
   } catch (error) {
     logger.error(`logging in ${error.message}`);
     res.status(500).send({
@@ -70,10 +82,10 @@ export const logoutUser = async (req, res) => {
     const foundUser = await User.findOne({
       username: user.username,
     });
-    foundUser.status = 'Offline';
+    foundUser.status = "Offline";
     await foundUser.save();
-    res.clearCookie("ct_session")
-    res.status(201).send('Successfully logged out');
+    res.clearCookie("ct_session");
+    res.status(201).send("Successfully logged out");
   } catch (error) {
     logger.error(`logging out ${error.message}`);
     res.status(500).send({
@@ -82,5 +94,45 @@ export const logoutUser = async (req, res) => {
         info: error.message,
       },
     });
+  }
+};
+
+export const getUserFriends = async (req, res) => {
+  try {
+    const { user } = req;
+    const foundUser = await User.findOne({
+      username: user.username,
+    }).populate("friends");
+
+    const uiFriends = foundUser.friends.map((user) =>
+      mongoUserFriendsoUiFriend(user)
+    );
+    res.status(201).send(uiFriends);
+  } catch (error) {
+    res.status(500).send({
+      message: {
+        content: "An error occured getting user friends in user",
+        info: error.message,
+      },
+    });
+  }
+};
+
+export const subscribeToNotifications = async (req, res) => {
+   const subscription = req.body;
+
+   res.status(201).json({});
+
+   const payload = JSON.stringify({ title: 'Push Test'});
+   webpush.sendNotification(subscription, payload).catch(err => console.log(err))
+};
+
+export const unsubscribeToNotifications = async (req, res) => {
+  try {
+    subscription = null;
+    clearInterval(pushIntervalID);
+    res.status(200);
+  } catch (error) {
+    console.log(error)
   }
 };

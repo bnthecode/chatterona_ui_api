@@ -1,7 +1,13 @@
 
+export const mongoUserFriendsoUiFriend = (mongoUser) => ({
+    id: mongoUser._id,
+    photoURL: mongoUser.photoURL,
+    username: mongoUser.username,
+})
 
 export const mongoUserToUiUser = (mongoUser) => ({
-    ...mongoUser ? mongoUser.toObject() : {},
-    id: mongoUser ? mongoUser._id : '12345',
-
+    id: mongoUser._id,
+    photoURL: mongoUser.photoURL,
+    username: mongoUser.username,
+    status: mongoUser.status,
 })

@@ -1,11 +1,88 @@
 import Channel from "../models/channelModel.js";
 import Message from "../models/messageModel.js";
-import { addToPreviousMessage, decideOnUpdate, getLastMessage, getMinutesPassed, getPreviousTime, structureNewMessage } from "../utilities/message-utilities.js";
+import User from "../models/userModel.js";
+import {
+  addToPreviousMessage,
+  decideOnUpdate,
+  getLastMessage,
+  getMinutesPassed,
+  getPreviousTime,
+  structureNewMessage,
+} from "../utilities/message-utilities.js";
 import moment from "moment";
 import logger from "../utilities/logger.js";
+import serverModel from "../models/serverModel.js";
+import { mongoChannelToUiChannel, mongoDirectMessageToUiDirectMessage } from "../parsers/channelParsers.js";
+
 export const createChannel = async (req, res, next) => {
   try {
-    res.status(201).send({ message: "created" });
+    const { serverId } = req.params;
+    const { channel } = req.body;
+
+    const createdChannel = new Channel({
+      ...channel,
+    });
+
+    const foundServer = await serverModel.findById(serverId);
+    foundServer.channels.push({id: createdChannel._id, name: channel.name, type: channel.type});
+
+    await foundServer.save()
+    const savedChannel = await createdChannel.save();
+
+    const uiChannel = mongoChannelToUiChannel(savedChannel);
+    res.status(201).send(uiChannel);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
+export const createDirectMessage = async (req, res, next) => {
+  try {
+    const { channel } = req.body;
+    const { user } = req;
+
+    const createdChannel = new Channel({
+      ...channel,
+    });
+    await createdChannel.save();
+    const foundUser = await User.findById(user.id);
+    const otherUser = await User.findById(channel.to);
+
+    const newDM = {
+      to: {
+        userId: otherUser._id,
+        photoURL: otherUser.photoURL,
+        username: otherUser.username,
+      },
+      from: {
+        userId: foundUser._id,
+        photoURL: foundUser.photoURL,
+        username: foundUser.username,
+      },
+      channelId: createdChannel._id,
+    };
+    foundUser.directMessages.push(newDM);
+
+    otherUser.directMessages.push(newDM);
+
+    await otherUser.save();
+
+    await foundUser.save();
+    res.status(201).send(newDM);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
+export const getDirectMessages = async (req, res, next) => {
+  try {
+    const { user } = req;
+
+    const foundUser = await User.findById(user.id);
+    const messages = foundUser ? foundUser.directMessages : [];
+    console.log(messages.length);
+
+    res.status(200).send(messages);
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -14,17 +91,12 @@ export const createChannel = async (req, res, next) => {
 export const getChannelMessages = async (req, res, next) => {
   try {
     const { channelId } = req.params;
-    const { page, limit } = req.query;
-    const perPage = 2;
-    // 1 page is how many messages? 2?
-    // lets go with 2.
 
-    const foundChannel = await Channel.findById({ _id: channelId }).populate({
+    const foundChannel = await Channel.findById(channelId).populate({
       path: "messages",
       options: {
-
-        sort: { timestamp: 'asc' },
-      }
+        sort: { timestamp: "asc" },
+      },
     });
 
     res.status(201).send(foundChannel.messages);
@@ -38,8 +110,7 @@ export const createChannelMessage = async (req, res, next) => {
   try {
     const { channelId } = req.params;
     const { user } = req;
-    // the ui already has populated info, no reason to try and figure out a ton of logic each time
-    // switch something.. idk yet
+
     const { message } = req.body;
     let responseMessage = {};
 
@@ -47,27 +118,33 @@ export const createChannelMessage = async (req, res, next) => {
     const foundChannel = await Channel.findOne({ _id: channelId }).populate({
       path: "messages",
     });
-// just do a quick check to see who the last author is-- TODO
-    // figure a way to not try and get all this info each time..
+
+
     const lastMessage = getLastMessage(foundChannel.messages);
     const previousTime = getPreviousTime(lastMessage);
     const minutesPassed = getMinutesPassed(previousTime);
-    const updateLast  = decideOnUpdate(minutesPassed, lastMessage, user.username);
+    const updateLast = decideOnUpdate(
+      minutesPassed,
+      lastMessage,
+      user.username
+    );
 
     if (updateLast) {
-      const updatedMessage = addToPreviousMessage(foundChannel.messages, newMessageContent);
-      // mongoose says this is deprecated.. need to fix
+      const updatedMessage = addToPreviousMessage(
+        foundChannel.messages,
+        newMessageContent
+      );
 
-        await Message.findByIdAndUpdate(lastMessage._id, { ...updatedMessage });
+      await Message.findByIdAndUpdate(lastMessage._id, { ...updatedMessage });
 
-        await foundChannel.save();
-        responseMessage = updatedMessage;
-
+      await foundChannel.save();
+      responseMessage = updatedMessage;
     } else {
       const newDbMessage = new Message({
         author: user,
         content: [newMessageContent],
         date: moment(),
+        idx: foundChannel.messages.length,
       });
       const savedMessage = await newDbMessage.save();
       responseMessage = savedMessage;
@@ -75,24 +152,9 @@ export const createChannelMessage = async (req, res, next) => {
       await foundChannel.save();
     }
 
-
-    // dont really like how this works, but how else do we tell the ui about an updated last message?
     res.status(201).send({ message: responseMessage, merge: updateLast });
   } catch (err) {
     logger.error(`POST /channels ${err.message}`);
-    res.status(500).send({ message: err.message });
-  }
-};
-
-export const setUserTyping = async (req, res, next) => {
-  try {
-    const { channelId } = req.params;
-    const { user } = req;
-    const { WebsocketService } = req.app.settings;
-
-    res.status(201).send({ message: "created" });
-  } catch (err) {
-    logger.error(`POST /channels/id/typing ${err.message}`);
     res.status(500).send({ message: err.message });
   }
 };

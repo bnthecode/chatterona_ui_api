@@ -9,11 +9,35 @@ const User = new Schema({
     type: String,
   },
   type: {
-    type: String
+    type: String,
   },
   status: {
-    type: String
-  }
+    type: String,
+  },
+  friends: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  directMessages: [
+    {
+      to: {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        photoURL: { type: String },
+        username: { type: String }
+      },
+      from: {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        photoURL: { type: String },
+        username: { type: String }
+      },
+      channelId: {
+        type: Schema.Types.ObjectId,
+        ref: "Channel",
+      },
+    },
+  ],
 });
 
 export default mongoose.model("User", User);

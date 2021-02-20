@@ -10,23 +10,22 @@ import logger from "./utilities/logger.js";
 import { httpAuthMiddleware } from "./middlewares/authMiddleware.js";
 
 const {
-  auth: { auth_enabled, allowedOrigins },
+  auth: { allowedOrigins, auth_enabled },
   database: { connection_string, database_config },
   server: { port },
   server: rootConfig,
 } = config;
 
 const app = express(rootConfig);
+app.use(cors({
+  credentials: auth_enabled,
+  origin: allowedOrigins
+}));
+
 const server = http.createServer(app);
 app.use(bodyParser.json());
-app.use(cookieParser());
-app.use(
-  cors({
-    credentials: auth_enabled,
-    origin: allowedOrigins,
-  })
-);
 
+app.use(cookieParser());
 app.use("/api", httpAuthMiddleware, router);
 
 try {
