@@ -95,7 +95,6 @@ export const createServer = async (req, res) => {
     });
 
     const createdServer = await newServer.save();
-    console.log(createdServer)
     const uiServer = mongoServerToUiServer(createdServer);
     res.status(201).send(uiServer);
   } catch (err) {

@@ -5,9 +5,6 @@ import {
 } from "../parsers/userParser.js";
 import logger from "../utilities/logger.js";
 import webpush from "web-push";
-import EventEmitter from "events";
-import config from "../config.js";
-
 
 const createMainUser = async () => {
   const createdUser = new User({
@@ -37,7 +34,7 @@ export const createUser = async (req, res) => {
     await foundMainUser.save();
     const uiUser = mongoUserToUiUser(savedUser);
     res.cookie("ct_session", uiUser.id);
-    res.status(201).send({ ...uiUser });
+    res.status(201).send(uiUser);
   } catch (error) {
     logger.error(`creating user ${error.message}`);
     res.status(500).send({
@@ -119,12 +116,14 @@ export const getUserFriends = async (req, res) => {
 };
 
 export const subscribeToNotifications = async (req, res) => {
-   const subscription = req.body;
+  const subscription = req.body;
 
-   res.status(201).json({});
+  res.status(201).json({});
 
-   const payload = JSON.stringify({ title: 'Push Test'});
-   webpush.sendNotification(subscription, payload).catch(err => console.log(err))
+  const payload = JSON.stringify({ title: "Push Test" });
+  webpush
+    .sendNotification(subscription, payload)
+    .catch((err) => console.log(err));
 };
 
 export const unsubscribeToNotifications = async (req, res) => {
@@ -133,6 +132,6 @@ export const unsubscribeToNotifications = async (req, res) => {
     clearInterval(pushIntervalID);
     res.status(200);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 };

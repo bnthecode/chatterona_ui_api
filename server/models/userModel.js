@@ -25,12 +25,12 @@ const User = new Schema({
       to: {
         userId: { type: Schema.Types.ObjectId, ref: "User" },
         photoURL: { type: String },
-        username: { type: String }
+        username: { type: String },
       },
       from: {
         userId: { type: Schema.Types.ObjectId, ref: "User" },
         photoURL: { type: String },
-        username: { type: String }
+        username: { type: String },
       },
       channelId: {
         type: Schema.Types.ObjectId,

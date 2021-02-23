@@ -43,8 +43,8 @@ const Server = new Schema({
         type: String,
       },
       type: {
-          type: String
-      }
+        type: String,
+      },
     },
   ],
 });

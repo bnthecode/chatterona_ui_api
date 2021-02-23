@@ -17,10 +17,12 @@ const {
 } = config;
 
 const app = express(rootConfig);
-app.use(cors({
-  credentials: auth_enabled,
-  origin: allowedOrigins
-}));
+app.use(
+  cors({
+    credentials: auth_enabled,
+    origin: allowedOrigins,
+  })
+);
 
 const server = http.createServer(app);
 app.use(bodyParser.json());

@@ -51,10 +51,12 @@ export const getMinutesPassed = (previousTime) => {
 };
 
 export const decideOnUpdate = (minutesPassed, lastMessage, username) => {
- return minutesPassed < 5 && lastMessage && lastMessage.author.username === username;
+  return (
+    minutesPassed < 5 && lastMessage && lastMessage.author.username === username
+  );
 };
 
-export const addToPreviousMessage = (messages, newMessage) => {  
+export const addToPreviousMessage = (messages, newMessage) => {
   const lastMessage = messages[messages.length - 1];
   const oldMessageObj = lastMessage.toObject();
   const newMessageToBeUpdated = {

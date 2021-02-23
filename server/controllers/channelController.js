@@ -12,7 +12,10 @@ import {
 import moment from "moment";
 import logger from "../utilities/logger.js";
 import serverModel from "../models/serverModel.js";
-import { mongoChannelToUiChannel, mongoDirectMessageToUiDirectMessage } from "../parsers/channelParsers.js";
+import {
+  mongoChannelToUiChannel,
+  mongoDirectMessageToUiDirectMessage,
+} from "../parsers/channelParsers.js";
 
 export const createChannel = async (req, res, next) => {
   try {
@@ -24,11 +27,14 @@ export const createChannel = async (req, res, next) => {
     });
 
     const foundServer = await serverModel.findById(serverId);
-    foundServer.channels.push({id: createdChannel._id, name: channel.name, type: channel.type});
-
-    await foundServer.save()
     const savedChannel = await createdChannel.save();
 
+    foundServer.channels.push({
+      _id: savedChannel._id,
+      name: channel.name,
+      type: channel.type,
+    });
+    await foundServer.save();
     const uiChannel = mongoChannelToUiChannel(savedChannel);
     res.status(201).send(uiChannel);
   } catch (err) {
@@ -80,7 +86,6 @@ export const getDirectMessages = async (req, res, next) => {
 
     const foundUser = await User.findById(user.id);
     const messages = foundUser ? foundUser.directMessages : [];
-    console.log(messages.length);
 
     res.status(200).send(messages);
   } catch (err) {
@@ -91,7 +96,6 @@ export const getDirectMessages = async (req, res, next) => {
 export const getChannelMessages = async (req, res, next) => {
   try {
     const { channelId } = req.params;
-
     const foundChannel = await Channel.findById(channelId).populate({
       path: "messages",
       options: {
@@ -101,7 +105,9 @@ export const getChannelMessages = async (req, res, next) => {
 
     res.status(201).send(foundChannel.messages);
   } catch (err) {
-    logger.error(`GET /channels/messages ${err.message}`);
+    logger.error(
+      `GET /channels/messages ${err.message}, ${req.params.channelId}`
+    );
     res.status(500).send({ message: err.message });
   }
 };
@@ -118,7 +124,6 @@ export const createChannelMessage = async (req, res, next) => {
     const foundChannel = await Channel.findOne({ _id: channelId }).populate({
       path: "messages",
     });
-
 
     const lastMessage = getLastMessage(foundChannel.messages);
     const previousTime = getPreviousTime(lastMessage);

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-
 const contentSchema = new Schema({
   date: {
     type: Date,
@@ -49,17 +48,20 @@ const authorSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
-})
+});
 
-const messageSchema = new Schema({
-  author: authorSchema,
-  content: [contentSchema],
-  date: {
-    type: Date,
+const messageSchema = new Schema(
+  {
+    author: authorSchema,
+    content: [contentSchema],
+    date: {
+      type: Date,
+    },
+    idx: {
+      type: Number,
+    },
   },
-  idx: {
-    type: Number
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 export default mongoose.model("Message", messageSchema);

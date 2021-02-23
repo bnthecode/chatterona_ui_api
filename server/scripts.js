@@ -1,1 +1,2 @@
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Code\projects\chatterona_ui_api\firebase\admin.json"
+$env: GOOGLE_APPLICATION_CREDENTIALS =
+  "C:Codeprojectschatterona_ui_api\firebaseadmin.json";

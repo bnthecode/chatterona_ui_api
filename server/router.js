@@ -22,7 +22,6 @@ import {
 } from "./controllers/userController.js";
 const router = express.Router();
 
-
 // users
 router.post("/users", createUser);
 router.put("/users/login", loginUser);
