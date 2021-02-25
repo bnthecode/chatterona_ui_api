@@ -116,6 +116,7 @@ export const createChannelMessage = async (req, res, next) => {
   try {
     const { channelId } = req.params;
     const { user } = req;
+    console.log(user)
 
     const { message } = req.body;
     let responseMessage = {};
