@@ -1,6 +1,6 @@
 import config from "../config.js";
 import jsonwebtoken from "jsonwebtoken";
-import userModel from "../models/userModel.js";
+import User from "../models/User.js";
 
 const {
   auth: { jwt },
@@ -17,7 +17,7 @@ export const httpAuthMiddleware = async (req, res, next) => {
     const cookie = req.cookies.ct_session;
     if (req.originalUrl !== "/api/users/login") {
       if (cookie) {
-        const foundUser = await userModel.findById(cookie);
+        const foundUser = await User.findById(cookie);
         req.user = {
           id: foundUser._id,
           username: foundUser.username,
