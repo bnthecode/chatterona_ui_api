@@ -1,6 +1,6 @@
 import moment from "moment";
-import Channel from "../models/channelModel.js";
-import Server from "../models/serverModel.js";
+import Channel from "../models/Channel.js";
+import Server from "../models/Server.js";
 import {
   mongoServersToUiServers,
   mongoServerToUiServer,

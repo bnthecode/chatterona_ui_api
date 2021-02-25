@@ -1,6 +1,6 @@
-import Channel from "../models/channelModel.js";
-import Message from "../models/messageModel.js";
-import User from "../models/userModel.js";
+import Channel from "../models/Channel.js";
+import Message from "../models/Message.js";
+import User from "../models/User.js";
 import {
   addToPreviousMessage,
   decideOnUpdate,
@@ -11,7 +11,7 @@ import {
 } from "../utilities/message-utilities.js";
 import moment from "moment";
 import logger from "../utilities/logger.js";
-import serverModel from "../models/serverModel.js";
+import serverModel from "../models/Server.js";
 import {
   mongoChannelToUiChannel,
   } from "../parsers/channelParsers.js";
