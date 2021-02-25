@@ -6,6 +6,7 @@ import {
   mongoServerToUiServer,
 } from "../parsers/serverParsers.js";
 import logger from "../utilities/logger.js";
+import { mainServer, mainUser } from "../utilities/inital-data.js";
 
 export const getServers = async (req, res) => {
   try {
@@ -84,10 +85,8 @@ export const createServer = async (req, res) => {
     );
 
     const newServer = new Server({
-      name: server.name || "Nothing",
-      photoURL:
-        user.photoURL ||
-        "https://images.unsplash.com/photo-1586182987320-4f376d39d787?ixid=MXwxMjA3fDB8MHxzZWFyY2h8N3x8Z2FtaW5nfGVufDB8fDB8&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+      name: server.name || mainServer.name,
+      photoURL: user.photoURL || mainUser.photoURL,
       timestamp: moment(),
       updates: [],
       channels: await savedChannels,

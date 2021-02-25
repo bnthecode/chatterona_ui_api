@@ -5,13 +5,11 @@ import {
 } from "../parsers/userParser.js";
 import logger from "../utilities/logger.js";
 import webpush from "web-push";
+import { mainUser } from "../utilities/inital-data.js";
 
 const createMainUser = async () => {
   const createdUser = new User({
-    username: "BRANDON",
-    photoURL:
-      "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MXx8ZG9nc3xlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-    status: "Online",
+    ...mainUser
   });
   const savedMainUser = await createdUser.save();
   return savedMainUser;
@@ -21,7 +19,7 @@ export const createUser = async (req, res) => {
   try {
     const { user } = req.body;
     // all for development so i can clear the db whenever
-    let foundMainUser = await User.findOne({ username: "BRANDON" });
+    let foundMainUser = await User.findOne({ username: mainUser.username });
     if (!foundMainUser) foundMainUser = await createMainUser();
     const createdUser = new User({
       ...user,
@@ -52,7 +50,7 @@ export const loginUser = async (req, res) => {
       username: user.username,
     });
     if (!foundUser) return createUser(req, res);
-    const foundMainUser = await User.findOne({ username: "BRANDON" });
+    const foundMainUser = await User.findOne({ username: mainUser.username });
     foundMainUser.friends.push(foundUser._id);
     await foundMainUser.save();
     foundUser.status = "Online";

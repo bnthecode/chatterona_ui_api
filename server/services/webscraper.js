@@ -1,10 +1,10 @@
 import axios from "axios";
 import cheerio from "cheerio";
 
-export async function scrapeMetatags(url) {
+export const scrapeMetatags = async (url) => {
   try {
     const response = await axios.get(url);
-    const $ = await cheerio.load(response.data);
+    const $ = cheerio.load(response.data);
 
     return {
       title1: $("title").text() || "Unknown",

@@ -14,10 +14,9 @@ import logger from "../utilities/logger.js";
 import serverModel from "../models/serverModel.js";
 import {
   mongoChannelToUiChannel,
-  mongoDirectMessageToUiDirectMessage,
-} from "../parsers/channelParsers.js";
+  } from "../parsers/channelParsers.js";
 
-export const createChannel = async (req, res, next) => {
+export const createChannel = async (req, res) => {
   try {
     const { serverId } = req.params;
     const { channel } = req.body;
@@ -42,7 +41,7 @@ export const createChannel = async (req, res, next) => {
   }
 };
 
-export const createDirectMessage = async (req, res, next) => {
+export const createDirectMessage = async (req, res) => {
   try {
     const { channel } = req.body;
     const { user } = req;
@@ -80,7 +79,7 @@ export const createDirectMessage = async (req, res, next) => {
   }
 };
 
-export const getDirectMessages = async (req, res, next) => {
+export const getDirectMessages = async (req, res) => {
   try {
     const { user } = req;
 
@@ -93,7 +92,7 @@ export const getDirectMessages = async (req, res, next) => {
   }
 };
 
-export const getChannelMessages = async (req, res, next) => {
+export const getChannelMessages = async (req, res) => {
   try {
     const { channelId } = req.params;
     const foundChannel = await Channel.findById(channelId).populate({
@@ -112,13 +111,12 @@ export const getChannelMessages = async (req, res, next) => {
   }
 };
 
-export const createChannelMessage = async (req, res, next) => {
+export const createChannelMessage = async (req, res) => {
   try {
     const { channelId } = req.params;
     const { user } = req;
-    console.log(user)
-
     const { message } = req.body;
+    
     let responseMessage = {};
 
     const newMessageContent = await structureNewMessage(message);
