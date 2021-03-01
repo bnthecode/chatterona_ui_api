@@ -1,4 +1,5 @@
 import express from "express";
+import { addChannelToCategory } from "./controllers/categoryController.js";
 import {
   createChannel,
   createChannelMessage,
@@ -9,7 +10,9 @@ import {
 import {
   addUserToServer,
   createServer,
+  getPublicServers,
   getServer,
+  getServerCategories,
   getServers,
   getServerUsers,
 } from "./controllers/serverController.js";
@@ -34,9 +37,14 @@ router.post("/subscribe", subscribeToNotifications);
 // servers
 router.post("/servers", createServer);
 router.get("/servers", getServers);
+router.get("/servers/public", getPublicServers)
 router.get("/servers/:serverId", getServer);
 router.get("/servers/:serverId/users", getServerUsers);
 router.put("/servers/:serverId/users", addUserToServer);
+router.get("/servers/:serverId/categories", getServerCategories);
+
+
+router.put("/categories/:categoryId/channels", addChannelToCategory)
 
 // channels / messages
 router.post("/channels", createDirectMessage);

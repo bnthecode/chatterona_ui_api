@@ -58,11 +58,13 @@ export const createDirectMessage = async (req, res) => {
         userId: otherUser._id,
         photoURL: otherUser.photoURL,
         username: otherUser.username,
+        status: otherUser.status,
       },
       from: {
         userId: foundUser._id,
         photoURL: foundUser.photoURL,
         username: foundUser.username,
+        status: foundUser.status,
       },
       channelId: createdChannel._id,
     };

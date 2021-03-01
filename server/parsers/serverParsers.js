@@ -6,6 +6,10 @@ export const mongoServerToUiServer = (mongoServer) => ({
     ...(channel ? channel.toObject() : {}),
     id: channel ? channel._id : "12345",
   })),
+  categories: mongoServer.categories ? mongoServer.categories.map((ctg) => ({
+    ...(ctg ? ctg.toObject() : {}),
+    id: ctg ? ctg._id : "12345",
+  })) : [],
 });
 
 export const mongoServersToUiServers = (mongoServer) => ({

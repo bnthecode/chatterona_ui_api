@@ -6,12 +6,27 @@ const Server = new Schema({
     type: String,
     required: true,
   },
-
+  type: {
+    type: String,
+    required: true
+  },
   photoURL: {
     type: String,
   },
   timestamp: {
     type: String,
+  },
+  description: {
+    type: String
+  },
+  logo: {
+    type: String
+  },
+  activeUsers: {
+    type: Number,
+  },
+  verified: {
+    type: Boolean
   },
   updates: [
     {
@@ -47,6 +62,12 @@ const Server = new Schema({
       },
     },
   ],
+  categories: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+    },
+  ]
 });
 
 export default mongoose.model("Server", Server);

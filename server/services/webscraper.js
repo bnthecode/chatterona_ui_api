@@ -7,13 +7,19 @@ export const scrapeMetatags = async (url) => {
     const $ = cheerio.load(response.data);
 
     return {
-      title1: $("title").text() || "Unknown",
+      title1:
+        $("title").text() ||
+        "Unknown",
       title2: $("head title").text() || "Unknown",
       description: $('meta[name="description"]').attr("content") || "Unknown",
       icon:
         $('link[rel="icon"]').attr("href") ||
+        $('link[rel="apple-touch-icon"]').attr("href") ||
         $("meta[property='og:image']").attr("content") ||
         $('link[rel="img_src"]').attr("href") ||
+        $("link").attr("href") ||
+        $("meta[name='msapplication-TileImage']").attr("content") ||
+      
         "Unknown",
       site: $("meta[property='og:site_name']").attr("content") || "Unknown",
       img: $("meta[property='og:image']").attr("content") || "Unknown",
@@ -26,4 +32,4 @@ export const scrapeMetatags = async (url) => {
       description: "Unknown",
     };
   }
-}
+};
